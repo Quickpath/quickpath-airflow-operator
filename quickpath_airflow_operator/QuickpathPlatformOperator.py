@@ -6,6 +6,7 @@ from .QuickpathPlatformServiceHook import QuickpathPlatformServiceHook
 import time
 from typing import Optional, Dict, Any
 
+
 class QuickpathPlatformOperator(BaseOperator):
     @apply_defaults
     def __init__(
@@ -68,14 +69,13 @@ class QuickpathPlatformOperator(BaseOperator):
         If the blueprint fails, an AirflowException will be raised
         """
         quickpath_service_hook = QuickpathPlatformServiceHook(quickpath_group_connection_id=self.service_connection_id)
-        if not self.synchronous:
-            self.request_object['execute_async'] = True
 
         response = quickpath_service_hook.execute_blueprint(
             environment_name=self.environment_name,
             blueprint_endpoint=self.blueprint_endpoint,
             blueprint_version=self.blueprint_version,
-            request_object=self.request_object
+            request_object=self.request_object,
+            synchronous=self.synchronous
         )
         blueprint_uuid = response['uuid']
         context['task_instance'].xcom_push(key="blueprint_uuid", value=blueprint_uuid)

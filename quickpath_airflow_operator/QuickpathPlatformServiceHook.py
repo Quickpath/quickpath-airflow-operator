@@ -20,6 +20,7 @@ class QuickpathPlatformServiceHook(HttpHook):
         blueprint_endpoint: str,
         blueprint_version: str = None,
         request_object: Optional[Dict[str, Any]] = None,
+        synchronous: bool = False,
     ):
         conn = self.get_connection(self.quickpath_group_connection_id)
         api_key = conn.password
@@ -28,7 +29,12 @@ class QuickpathPlatformServiceHook(HttpHook):
         if conn.host.endswith("/"):
             endpoint = ""
 
-        endpoint += f"api/service/{blueprint_endpoint}/{environment_name}"
+        if synchronous:
+            endpoint += "api/service"
+        else:
+            endpoint += "api/service_async"
+
+        endpoint += f"/{blueprint_endpoint}/{environment_name}"
         if blueprint_version:
             endpoint += f"/{blueprint_version}"
 
@@ -39,6 +45,7 @@ class QuickpathPlatformServiceHook(HttpHook):
             "User-Agent": user_agent,
         }
         self.log.info(f"Request Object: {request_object}")
+        response = ""
         try:
             self.method = "post"
             response = self.run(
